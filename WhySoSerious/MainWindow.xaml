@@ -1,0 +1,28 @@
+﻿<Window x:Class="WhySoSerious.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WhySoSerious"
+        mc:Ignorable="d"
+        Title="WhySoSerious" Background="#FF085B00" ResizeMode="CanMinimize" Height="1024" Width="1280">
+    <Grid Width="1280" Height="1024">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="button1" Content="Zagraj" HorizontalAlignment="Left" Height="94" Margin="763,460,-993,0" VerticalAlignment="Top" Width="256" Background="#FF931010" Foreground="#FFC9FF39" FontSize="48"/>
+        <Button x:Name="button2" Content="Wyniki" HorizontalAlignment="Left" Height="94" Margin="763,604,-1000,0" VerticalAlignment="Top" Width="256" Background="#FF931010" Foreground="#FFC9FF39" FontSize="48"/>
+        <Button x:Name="button3" Content="Wyjdź" HorizontalAlignment="Left" Height="94" Margin="763,748,-1000,0" VerticalAlignment="Top" Width="256" Background="#FF931010" Foreground="#FFC9FF39" FontSize="48"/>
+        <Label x:Name="tytulGry" Content="Why So Serious¿" HorizontalAlignment="Left" Height="168" Margin="61,173,-887,0" VerticalAlignment="Top" Width="850" Background="#00000000" FontFamily="Calibri" FontSize="120" RenderTransformOrigin="0.5,0.5" Foreground="#FFC9FF39">
+            <Label.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-11.621"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Label.RenderTransform>
+        </Label>
+
+    </Grid>
+</Window>
