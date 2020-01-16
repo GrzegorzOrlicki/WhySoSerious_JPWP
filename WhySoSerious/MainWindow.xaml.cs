@@ -28,7 +28,10 @@ namespace WhySoSerious
         private int tryb = 0; //0 - menu główne, 1 - rysowanie planszy, 2 - gra, 3 - koniec
         int licznik_czasu = 0;
         string ostatnia_komorka = "";
+        string sciezka = "";
         //string wspolrzedne = "";
+        int fails = 0;
+        DispatcherTimer timer = new DispatcherTimer();
 
         public MainWindow()
         {
@@ -54,7 +57,6 @@ namespace WhySoSerious
             //Pokazanie menu gry z prawej strony
 
             //Licznik czasu
-            DispatcherTimer timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += timer_Tick;
 
@@ -79,7 +81,7 @@ namespace WhySoSerious
             }
 
             //Animacja kolejnych kroków
-            string sciezka = plansza.road;
+            sciezka = plansza.road;
            
             int k = 0;
             while(sciezka.Length > 0)
@@ -113,86 +115,6 @@ namespace WhySoSerious
             bool czy_koniec = false;
             sciezka = plansza.road;
 
-            while (!czy_koniec)
-            {
-                string wspolrzedne = sciezka.Remove(2, sciezka.Length - 2);
-                if (ostatnia_komorka == wspolrzedne)
-                {
-                    //Została wybrana prawidłowa komórka
-                    //
-                    foreach (var item in gra.Children)
-                    {
-                        if (item is Button)
-                        {
-                            var button = (Button)item;
-                            string buttonId = button.Name.Remove(0, 1);
-                            if (buttonId == wspolrzedne)
-                            {
-                                button.Content = new Image
-                                {
-                                    Source = new BitmapImage(new Uri("footprints.png", UriKind.Relative)),
-                                    VerticalAlignment = VerticalAlignment.Center
-                                };
-                            }
-
-                        }
-                    }
-                }
-                if (sciezka == "") czy_koniec = true;
-            }
-            //Jeśli nie, to wybierz jeszcze raz
-
-            //Jeśli tak, to sprawdz, czy zgadza się ruch z wygenerowanym
-
-            //Jeśli tak, to:
-            //Animacja dobrego ruchu
-
-            //Sprawdź, czy koniec
-
-            //Koniec gry
-            timer.Stop();
-            //Wyświetlenie podsumowania - wynik
-            licznik_czasu += 10;
-            int wynik = (int)(Math.Pow(10, ((int)slider.Value - fails - 2)) - licznik_czasu);
-            MessageBox.Show("Udało Ci się ukończyć poziom!\nIlość punktów:\n" + wynik.ToString(), "Gratulacje!");
-            //Zapisanie wyników do pliku
-            DateTime data = DateTime.Now;
-            
-            using (System.IO.StreamWriter file =
-            new System.IO.StreamWriter(@"wyniki.txt", true))
-            {
-                file.WriteLine(data.ToString() + "\t" + wynik.ToString() + " pkt");
-            }
-
-            //Reset timera
-            licznik_czasu = 0;
-
-            //Wyświetlenie ekranu tytułowego i ukrycie elementów gry
-            
-            foreach (var item in gra.Children)
-            {
-                if (item is Button)
-                {
-                    var button = (Button)item;
-                    var buttonId = Convert.ToInt32(button.Tag);
-                    if (buttonId == 1)
-                    {
-                        button.Visibility = Visibility.Hidden;
-                    }
-
-                }
-            }
-
-            tytulGry.Visibility = Visibility.Visible;
-            button1.Visibility = Visibility.Visible;
-            button2.Visibility = Visibility.Visible;
-            label1.Visibility = Visibility.Visible;
-            label2.Visibility = Visibility.Visible;
-            label3.Visibility = Visibility.Visible;
-            slider.Visibility = Visibility.Visible;
-            zegar.Visibility = Visibility.Hidden;
-
-            tryb = 0;
         }
 
         /*
@@ -205,10 +127,63 @@ namespace WhySoSerious
             });
         }
         */
-        void button_Click(object sender, RoutedEventArgs e)
+        void  button_Click(object sender, RoutedEventArgs e)
         {
+            
             //MessageBox.Show(string.Format("You clicked on the {0}. button.", (sender as Button).Tag));
-            ostatnia_komorka = (sender as Button).Tag.ToString();
+            ostatnia_komorka = ((sender as Button).Name.ToString()).Remove(0,1);
+
+            string wspolrzedne = sciezka.Remove(2, sciezka.Length - 2);
+            MessageBox.Show(wspolrzedne + " Wybrana scieżka: " + ostatnia_komorka + "\nSciezka: " + sciezka);
+            if (ostatnia_komorka == wspolrzedne)
+            {
+                //Została wybrana prawidłowa komórka
+                foreach (var item in gra.Children)
+                {
+                    if (item is Button)
+                    {
+                        var button = (Button)item;
+                        string buttonId = button.Name.Remove(0, 1);
+                        if (buttonId == wspolrzedne)
+                        {
+                            button.Content = new Image
+                            {
+                                Source = new BitmapImage(new Uri("footprints.png", UriKind.Relative)),
+                                VerticalAlignment = VerticalAlignment.Center
+                            };
+                        }
+
+                    }
+                }
+                sciezka = sciezka.Remove(0, 2);
+            }
+
+            if (sciezka == "")
+            {
+                //Koniec gry
+                timer.Stop();
+                //Wyświetlenie podsumowania - wynik
+                licznik_czasu += 10;
+                int wynik = (int)(Math.Pow(10, ((int)slider.Value - fails - 2)) - licznik_czasu);
+                MessageBox.Show("Udało Ci się ukończyć poziom!\nIlość punktów:\n" + wynik.ToString(), "Gratulacje!");
+                //Zapisanie wyników do pliku
+                DateTime data = DateTime.Now;
+
+                using (System.IO.StreamWriter file =
+                new System.IO.StreamWriter(@"wyniki.txt", true))
+                {
+                    file.WriteLine(data.ToString() + "\t" + wynik.ToString() + " pkt");
+                }
+
+                //Reset timera
+                licznik_czasu = 0;
+
+                //Wyświetlenie ekranu tytułowego i ukrycie elementów gry
+
+                wylaczenie_UI();
+
+                tryb = 0;
+            }
         }
 
         private void CreateAButton(int y, int x)
@@ -254,15 +229,9 @@ namespace WhySoSerious
             } else if(tryb == 1)
             {
                 //Gdy gra jest włączona to wyjście wychodzi do menu głównego
-                tytulGry.Visibility = Visibility.Visible;
-                button1.Visibility = Visibility.Visible;
-                button2.Visibility = Visibility.Visible;
-                label1.Visibility = Visibility.Visible;
-                label2.Visibility = Visibility.Visible;
-                label3.Visibility = Visibility.Visible;
-                slider.Visibility = Visibility.Visible;
-                zegar.Visibility = Visibility.Hidden;
                 
+                wylaczenie_UI();
+
                 tryb = 0;
             }
             
@@ -272,6 +241,32 @@ namespace WhySoSerious
         {
             licznik_czasu++;
             zegar.Content = "Czas:\n" + (licznik_czasu / 60).ToString() + ":" + (licznik_czasu % 60).ToString();
+        }
+
+        private void wylaczenie_UI()
+        {
+            foreach (var item in gra.Children)
+            {
+                if (item is Button)
+                {
+                    var button = (Button)item;
+                    var buttonId = Convert.ToInt32(button.Tag);
+                    if (buttonId == 1)
+                    {
+                        button.Visibility = Visibility.Hidden;
+                    }
+
+                }
+            }
+
+            tytulGry.Visibility = Visibility.Visible;
+            button1.Visibility = Visibility.Visible;
+            button2.Visibility = Visibility.Visible;
+            label1.Visibility = Visibility.Visible;
+            label2.Visibility = Visibility.Visible;
+            label3.Visibility = Visibility.Visible;
+            slider.Visibility = Visibility.Visible;
+            zegar.Visibility = Visibility.Hidden;
         }
     }
 }
