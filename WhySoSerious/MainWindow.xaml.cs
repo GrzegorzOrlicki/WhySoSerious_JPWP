@@ -36,6 +36,10 @@ namespace WhySoSerious
         public MainWindow()
         {
             InitializeComponent();
+
+            //Licznik czasu
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += timer_Tick;
         }
 
         private async void button1_Click(object sender, RoutedEventArgs e)
@@ -53,23 +57,11 @@ namespace WhySoSerious
             label2.Visibility = Visibility.Hidden;
             label3.Visibility = Visibility.Hidden;
             slider.Visibility = Visibility.Hidden;
-            
-            //Pokazanie menu gry z prawej strony
-
-            //Licznik czasu
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += timer_Tick;
-
-            //Licznik pomyłek
-            int fails = 0;
-            //Przycisk zakończenia rozgrywki
 
             //I część - generowanie planszy
             //Tworzenie obiektu planszy - klasa Board
             //Konstruktor tworzy obiekt i generuje trasę
             Board plansza = new Board(poziom);
-
-            //MessageBox.Show(plansza.wypisz_tablice() + "\nSciezka" + plansza.road);
 
             //Rysowanie planszy
             for (int i = 0; i < poziom; i++)
@@ -105,14 +97,13 @@ namespace WhySoSerious
                 sciezka = sciezka.Remove(0, 2);
             }
 
-            MessageBox.Show("eeee");
+            MessageBox.Show("Start!");
             //II część - ruch gracza
             licznik_czasu = 0;
             timer.Start();
             zegar.Visibility = Visibility.Visible;
             //Pętla w której gracz wybiera kolejne kroki
             //Sprawdzenie, czy ruch jest dozwolony
-            bool czy_koniec = false;
             sciezka = plansza.road;
 
         }
@@ -129,8 +120,6 @@ namespace WhySoSerious
         */
         void  button_Click(object sender, RoutedEventArgs e)
         {
-            
-            //MessageBox.Show(string.Format("You clicked on the {0}. button.", (sender as Button).Tag));
             ostatnia_komorka = ((sender as Button).Name.ToString()).Remove(0,1);
 
             string wspolrzedne = sciezka.Remove(2, sciezka.Length - 2);
@@ -156,6 +145,10 @@ namespace WhySoSerious
                     }
                 }
                 sciezka = sciezka.Remove(0, 2);
+            } else
+            {
+                fails++;
+                MessageBox.Show("Błędna ścieżka!");
             }
 
             if (sciezka == "")
@@ -163,7 +156,6 @@ namespace WhySoSerious
                 //Koniec gry
                 timer.Stop();
                 //Wyświetlenie podsumowania - wynik
-                licznik_czasu += 10;
                 int wynik = (int)(Math.Pow(10, ((int)slider.Value - fails - 2)) - licznik_czasu);
                 MessageBox.Show("Udało Ci się ukończyć poziom!\nIlość punktów:\n" + wynik.ToString(), "Gratulacje!");
                 //Zapisanie wyników do pliku
@@ -179,7 +171,6 @@ namespace WhySoSerious
                 licznik_czasu = 0;
 
                 //Wyświetlenie ekranu tytułowego i ukrycie elementów gry
-
                 wylaczenie_UI();
 
                 tryb = 0;
@@ -239,7 +230,7 @@ namespace WhySoSerious
 
         void timer_Tick(object sender, EventArgs e)
         {
-            licznik_czasu++;
+            licznik_czasu+=1;
             zegar.Content = "Czas:\n" + (licznik_czasu / 60).ToString() + ":" + (licznik_czasu % 60).ToString();
         }
 
@@ -267,6 +258,8 @@ namespace WhySoSerious
             label3.Visibility = Visibility.Visible;
             slider.Visibility = Visibility.Visible;
             zegar.Visibility = Visibility.Hidden;
+
+            timer.Stop();
         }
     }
 }
