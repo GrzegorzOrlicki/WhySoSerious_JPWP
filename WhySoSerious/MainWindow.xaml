@@ -6,13 +6,14 @@
         xmlns:local="clr-namespace:WhySoSerious"
         mc:Ignorable="d"
         Title="WhySoSerious" Background="#FF085B00" ResizeMode="CanMinimize" Height="1024" Width="1280" WindowStartupLocation="CenterScreen" WindowStyle="None">
-    <Grid Width="1280" Height="1024">
+  
+    <Grid x:Name="gra" Width="1280" Height="1024">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="button1" Content="Zagraj" HorizontalAlignment="Left" Height="94" Margin="763,460,-993,0" VerticalAlignment="Top" Width="256" Background="#FF931010" Foreground="#FFC9FF39" FontSize="48" Click="button1_Click"/>
-        <Button x:Name="button2" Content="Wyniki" HorizontalAlignment="Left" Height="94" Margin="763,604,-1000,0" VerticalAlignment="Top" Width="256" Background="#FF931010" Foreground="#FFC9FF39" FontSize="48" Click="button2_Click"/>
-        <Button x:Name="button3" Content="Wyjdź" HorizontalAlignment="Left" Height="94" Margin="763,748,-1000,0" VerticalAlignment="Top" Width="256" Background="#FF931010" Foreground="#FFC9FF39" FontSize="48" Click="button3_Click"/>
+        <Button x:Name="button1" Content="Zagraj" HorizontalAlignment="Left" Height="94" Margin="981,641,-1204,0" VerticalAlignment="Top" Width="256" Background="#FF931010" Foreground="#FFC9FF39" FontSize="48" Click="button1_Click" Tag="0"/>
+        <Button x:Name="button2" Content="Wyniki" HorizontalAlignment="Left" Height="94" Margin="981,761,-1205,0" VerticalAlignment="Top" Width="256" Background="#FF931010" Foreground="#FFC9FF39" FontSize="48" Click="button2_Click" Tag="0"/>
+        <Button x:Name="button3" Content="Wyjdź" HorizontalAlignment="Left" Height="94" Margin="981,881,-1207,0" VerticalAlignment="Top" Width="256" Background="#FF931010" Foreground="#FFC9FF39" FontSize="48" Click="button3_Click" Tag="2"/>
         <Label x:Name="tytulGry" Content="Why So Serious¿" HorizontalAlignment="Left" Height="168" Margin="61,173,-887,0" VerticalAlignment="Top" Width="850" Background="#00000000" FontFamily="Calibri" FontSize="120" RenderTransformOrigin="0.5,0.5" Foreground="#FFC9FF39">
             <Label.RenderTransform>
                 <TransformGroup>
@@ -23,6 +24,11 @@
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
+        <Slider x:Name="slider" Orientation="Vertical" HorizontalAlignment="Left" Height="248" Margin="918,695,-694,0" VerticalAlignment="Top" Width="34" Foreground="#FF931010" Minimum="4" Maximum="6" Value="4" SmallChange="1" TickPlacement="TopLeft" IsSnapToTickEnabled="True"/>
+        <Label x:Name="label1" Content="Łatwy" HorizontalAlignment="Left" Margin="805,904,-660,0" VerticalAlignment="Top" Height="61" Width="108" FontSize="36" Foreground="#FFC9FF39"/>
+        <Label x:Name="label2" Content="Średni" HorizontalAlignment="Left" Margin="802,784,-659,0" VerticalAlignment="Top" Foreground="#FFC9FF39" FontSize="36" RenderTransformOrigin="0.261,0.103"/>
+        <Label x:Name="label3" Content="Trudny" HorizontalAlignment="Left" Margin="795,664,-658,0" VerticalAlignment="Top" FontSize="36" Foreground="#FFC9FF39"/>
+        <Label x:Name="zegar" Content="Czas:" HorizontalAlignment="Center" Height="112" Margin="981,32,-974,0" VerticalAlignment="Center" Width="256" FontSize="36" Foreground="#FFC9FF39" Visibility="Hidden" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
 
     </Grid>
 </Window>

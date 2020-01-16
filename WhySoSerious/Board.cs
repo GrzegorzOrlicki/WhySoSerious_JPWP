@@ -36,9 +36,9 @@ namespace WhySoSerious
         private int max_tab;
         public string road ="";
 
-        public Board(string poziom, int wielkosc)
+        public Board(int poziom)
         {
-            max_tab = wielkosc;
+            //max_tab = wielkosc;
             for(int y = 0; y < 10; y++)
             {
                 for (int x = 0; x < 10; x++)
@@ -47,28 +47,19 @@ namespace WhySoSerious
                 }
             }
             //Określenie wielkości tablicy dla poziomu trudności
-            switch (poziom)
-            {
-                case "latwy":
-                    max_tab = 4;
-                    break;
-                case "sredni":
-                    max_tab = 5;
-                    break;
-                case "trudny":
-                    max_tab = 6;
-                    break;
-            }
-            /*
-            //Wygenerowanie ścieżki
+            max_tab = poziom;
+
             Random random = new Random();
-            int[] index = new int[2] {max_tab - 1, random.Next(max_tab)}; //tablica przechowująca bieżące współrzędne tablicy
-            tab[index[0], index[1]] |= 1;
+            //String pokazujący zawartość tablicy planszy
+
+            int[] index = new int[2] { max_tab - 1, random.Next(max_tab) }; //tablica przechowująca bieżące współrzędne tablicy
+           
+            tab[index[0], index[1]] += 1;
+            road = index[0].ToString() + index[1].ToString();
 
             int[] index_next = new int[2]; //tablica przechowująca wylosowywane następne współrzędne
-            int kierunek = 0; // zmienna przechowująca wylosowany kierunek
+            //int kierunek = 0; // zmienna przechowująca wylosowany kierunek
 
-            
             //Pętla algorytmu generowania ścieżki
             bool czy_koniec_generowania = false;
             while (!czy_koniec_generowania)
@@ -77,8 +68,9 @@ namespace WhySoSerious
                 bool czy_mozliwy_ruch = false;
                 while (!czy_mozliwy_ruch)
                 {
-                    //Czy zostały wybrane wszystkie kierunki dla tego pola? 
-                    if(tab[index[0], index[1]] == 0b11110)
+
+                    //Czy zostały wybrane wszystkie kierunki dla tego pola?
+                    if (tab[index[0], index[1]] == 0b11110)
                     {
                         road = road.Remove(road.Length - 2, 2);
                         index[0] = road[road.Length - 2];
@@ -88,7 +80,8 @@ namespace WhySoSerious
                         continue;
                     }
 
-                    kierunek = random.Next(4);
+                    int kierunek = random.Next(4);
+
                     //Obliczenie następnego pola na bazie kierunku
                     switch (kierunek)
                     {
@@ -109,32 +102,36 @@ namespace WhySoSerious
                             index_next[1] = index[1] - 1;
                             break;
                     }
+
                     //Czy dany kierunek już był wylosowany?
-                    if((tab[index[0], index[1]] & (1 << (kierunek + 1)) >> (kierunek + 1)) == 1)
+
+                    if (((tab[index[0], index[1]] & (1 << (kierunek + 1))) >> (kierunek + 1)) == 1)
                     {
                         continue;
                     }
-                    
+                    //MessageBox.Show("Dany kierunek nie był wylosowany");
+
                     //Czy następna komórka znajduje się w polu gry?
-                        //Jeśli nie to zaznaczenie, że już był sprawdzany dany kierunek i wylosowanie innego
-                    if((index_next[0] < 0) || (index_next[0] > max_tab) || (index_next[1] < 0) || (index_next[1] > max_tab))
+                    //Jeśli nie to zaznaczenie, że już był sprawdzany dany kierunek i wylosowanie innego
+                    if ((index_next[0] < 0) || (index_next[0] >= max_tab) || (index_next[1] < 0) || (index_next[1] >= max_tab))
                     {
-                        tab[index[0], index[1]] |= (1 << (kierunek + 1));
                         continue;
                     }
+                    // MessageBox.Show("Następna komórka znajuje się w polu gry");
 
                     //Czy następna komórka jest już ścieżką?
-                    if(tab[index_next[0], index_next[1]] % 2 == 1)
+                    if (tab[index_next[0], index_next[1]] % 2 == 1)
                     {
-                        tab[index[0], index[1]] |= (1 << (kierunek + 1));
                         continue;
                     }
+                    //MessageBox.Show("Następna komórka nie jest ścieżką");
 
                     //Dodanie współrzędnych nowej komórki do stringa określającego ścieżkę
                     road += index_next[0].ToString() + index_next[1].ToString();
 
                     //Gdy już jest znaleziona pasująca komórka
                     tab[index[0], index[1]] |= 1;
+                    tab[index[0], index[1]] |= (1 << (kierunek + 1));
 
                     //Przyspieszenie sprawdzania - zaznaczenie połączenia z poprzednią komórką
                     switch (kierunek)
@@ -153,14 +150,13 @@ namespace WhySoSerious
                             break;
                     }
 
-                    index = index_next;
+                    index[0] = index_next[0];
+                    index[1] = index_next[1];
                     czy_mozliwy_ruch = true;
                 }
-        
-                //Warunek zakończenia algorytmu
+               
                 if (index[0] == 0) czy_koniec_generowania = true;
             }
-            */
         }
 
         public string wypisz_tablice()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,33 +13,50 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using System.Diagnostics;
 
 namespace WhySoSerious
 {
     /// <summary>
     /// Logika interakcji dla klasy MainWindow.xaml
     /// </summary>
+    /// 
+    
     public partial class MainWindow : Window
     {
+        private int tryb = 0; //0 - menu główne, 1 - rysowanie planszy, 2 - gra, 3 - koniec
+        int licznik_czasu = 0;
+        string ostatnia_komorka = "";
+        //string wspolrzedne = "";
+
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, RoutedEventArgs e)
+        private async void button1_Click(object sender, RoutedEventArgs e)
         {
+            tryb = 1;
             //-----------------Rozpoczęcie gry
             //Wybór poziomu trudności
-            string poziom = "latwy";
+            int poziom = (int)slider.Value;
 
             //Ukrycie elementów interface'u
             tytulGry.Visibility = Visibility.Hidden;
             button1.Visibility = Visibility.Hidden;
             button2.Visibility = Visibility.Hidden;
-            button3.Visibility = Visibility.Hidden;
+            label1.Visibility = Visibility.Hidden;
+            label2.Visibility = Visibility.Hidden;
+            label3.Visibility = Visibility.Hidden;
+            slider.Visibility = Visibility.Hidden;
+            
             //Pokazanie menu gry z prawej strony
 
             //Licznik czasu
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += timer_Tick;
 
             //Licznik pomyłek
             int fails = 0;
@@ -47,134 +65,81 @@ namespace WhySoSerious
             //I część - generowanie planszy
             //Tworzenie obiektu planszy - klasa Board
             //Konstruktor tworzy obiekt i generuje trasę
-            int max_tab = 4;
-            Board plansza = new Board(poziom, max_tab);
+            Board plansza = new Board(poziom);
 
-            //Wygenerowanie ścieżki
-            
-            Random random = new Random();
-            //String pokazujący zawartość tablicy planszy
-            MessageBox.Show(plansza.wypisz_tablice());
-
-            int[] index = new int[2] { max_tab - 1, random.Next(max_tab) }; //tablica przechowująca bieżące współrzędne tablicy
-            MessageBox.Show(index[0].ToString() + " " + index[1].ToString());
-            plansza.tab[index[0], index[1]] += 1;
-            plansza.road = index[0].ToString() + index[1].ToString();
-
-            
-            MessageBox.Show(plansza.wypisz_tablice());
-
-            int[] index_next = new int[2]; //tablica przechowująca wylosowywane następne współrzędne
-            //int kierunek = 0; // zmienna przechowująca wylosowany kierunek
-
-            //Pętla algorytmu generowania ścieżki
-            bool czy_koniec_generowania = false;
-            while (!czy_koniec_generowania)
-            {
-                //Pętla wyboru następnego kierunku
-                bool czy_mozliwy_ruch = false;
-                while (!czy_mozliwy_ruch)
-                {
-                    
-                    //Czy zostały wybrane wszystkie kierunki dla tego pola?
-                    if (plansza.tab[index[0], index[1]] == 0b11110)
-                    {
-                        plansza.road = plansza.road.Remove(plansza.road.Length - 2, 2);
-                        index[0] = plansza.road[plansza.road.Length - 2];
-                        index[1] = plansza.road[plansza.road.Length - 1];
-                        //Wskazanie, że nie jest już na pewno drogą
-                        plansza.tab[index[0], index[1]] -= 1;
-                        continue;
-                    }
-
-                    int kierunek = random.Next(4);
-                   
-                    //Obliczenie następnego pola na bazie kierunku
-                    switch (kierunek)
-                    {
-                        case 0:
-                            index_next[0] = index[0] - 1;
-                            index_next[1] = index[1];
-                            break;
-                        case 1:
-                            index_next[0] = index[0];
-                            index_next[1] = index[1] + 1;
-                            break;
-                        case 2:
-                            index_next[0] = index[0] + 1;
-                            index_next[1] = index[1];
-                            break;
-                        case 3:
-                            index_next[0] = index[0];
-                            index_next[1] = index[1] - 1;
-                            break;
-                    }
-                   
-                    //Czy dany kierunek już był wylosowany?
-
-                    if (((plansza.tab[index[0], index[1]] & (1 << (kierunek + 1))) >> (kierunek + 1)) == 1)
-                    {
-                        continue;
-                    }
-                    //MessageBox.Show("Dany kierunek nie był wylosowany");
-
-                    //Czy następna komórka znajduje się w polu gry?
-                    //Jeśli nie to zaznaczenie, że już był sprawdzany dany kierunek i wylosowanie innego
-                    if ((index_next[0] < 0) || (index_next[0] >= max_tab) || (index_next[1] < 0) || (index_next[1] >= max_tab))
-                    {
-                        continue;
-                    }
-                   // MessageBox.Show("Następna komórka znajuje się w polu gry");
-
-                    //Czy następna komórka jest już ścieżką?
-                    if (plansza.tab[index_next[0], index_next[1]] % 2 == 1)
-                    {
-                        continue;
-                    }
-                    //MessageBox.Show("Następna komórka nie jest ścieżką");
-
-                    //Dodanie współrzędnych nowej komórki do stringa określającego ścieżkę
-                    plansza.road += index_next[0].ToString() + index_next[1].ToString();
-
-                    //Gdy już jest znaleziona pasująca komórka
-                    plansza.tab[index[0], index[1]] |= 1;
-                    plansza.tab[index[0], index[1]] |= (1 << (kierunek + 1));
-
-                    //Przyspieszenie sprawdzania - zaznaczenie połączenia z poprzednią komórką
-                    switch (kierunek)
-                    {
-                        case 0:
-                            plansza.tab[index_next[0], index_next[1]] |= (1 << (2 + 1));
-                            break;
-                        case 1:
-                            plansza.tab[index_next[0], index_next[1]] |= (1 << (3 + 1));
-                            break;
-                        case 2:
-                            plansza.tab[index_next[0], index_next[1]] |= (1 << (0 + 1));
-                            break;
-                        case 3:
-                            plansza.tab[index_next[0], index_next[1]] |= (1 << (1 + 1));
-                            break;
-                    }
-
-                    index[0] = index_next[0];
-                    index[1] = index_next[1];
-                    czy_mozliwy_ruch = true;
-                }
-                MessageBox.Show(plansza.wypisz_tablice() + "\nBieżacy xy: " + index[0].ToString() + " " + index[1].ToString() + "\nNastepny xy: " + index_next[0].ToString() + " " + index_next[1].ToString() + "\nSciezka" + plansza.road);
-                //Warunek zakończenia algorytmu
-                if (index[0] == 0) czy_koniec_generowania = true;
-            }
-            MessageBox.Show(plansza.wypisz_tablice() + "\nBieżacy xy: " + index[0].ToString() + " " + index[1].ToString() + "\nNastepny xy: " + index_next[0].ToString() + " " + index_next[1].ToString() + "\nSciezka" + plansza.road);
+            //MessageBox.Show(plansza.wypisz_tablice() + "\nSciezka" + plansza.road);
 
             //Rysowanie planszy
+            for (int i = 0; i < poziom; i++)
+            {
+                for(int j = 0; j < poziom; j++)
+                {
+                    CreateAButton(i, j);
+                }
+            }
 
             //Animacja kolejnych kroków
+            string sciezka = plansza.road;
+           
+            int k = 0;
+            while(sciezka.Length > 0)
+            {
+                string wspolrzedne = sciezka.Remove(2, sciezka.Length-2);
+                
+                foreach (var item in gra.Children)
+                {
+                    if (item is Button)
+                    {
+                        var button = (Button)item;
+                        string buttonId = button.Name.Remove(0, 1);
+                        if (buttonId == wspolrzedne)
+                        {
+                            button.Content = k.ToString();
+                        }
 
+                    }
+                }
+                k++;
+                sciezka = sciezka.Remove(0, 2);
+            }
+
+            MessageBox.Show("eeee");
             //II część - ruch gracza
+            licznik_czasu = 0;
+            timer.Start();
+            zegar.Visibility = Visibility.Visible;
             //Pętla w której gracz wybiera kolejne kroki
             //Sprawdzenie, czy ruch jest dozwolony
+            bool czy_koniec = false;
+            sciezka = plansza.road;
 
+            while (!czy_koniec)
+            {
+                string wspolrzedne = sciezka.Remove(2, sciezka.Length - 2);
+                if (ostatnia_komorka == wspolrzedne)
+                {
+                    //Została wybrana prawidłowa komórka
+                    //
+                    foreach (var item in gra.Children)
+                    {
+                        if (item is Button)
+                        {
+                            var button = (Button)item;
+                            string buttonId = button.Name.Remove(0, 1);
+                            if (buttonId == wspolrzedne)
+                            {
+                                button.Content = new Image
+                                {
+                                    Source = new BitmapImage(new Uri("footprints.png", UriKind.Relative)),
+                                    VerticalAlignment = VerticalAlignment.Center
+                                };
+                            }
+
+                        }
+                    }
+                }
+                if (sciezka == "") czy_koniec = true;
+            }
             //Jeśli nie, to wybierz jeszcze raz
 
             //Jeśli tak, to sprawdz, czy zgadza się ruch z wygenerowanym
@@ -185,17 +150,83 @@ namespace WhySoSerious
             //Sprawdź, czy koniec
 
             //Koniec gry
+            timer.Stop();
             //Wyświetlenie podsumowania - wynik
-
+            licznik_czasu += 10;
+            int wynik = (int)(Math.Pow(10, ((int)slider.Value - fails - 2)) - licznik_czasu);
+            MessageBox.Show("Udało Ci się ukończyć poziom!\nIlość punktów:\n" + wynik.ToString(), "Gratulacje!");
             //Zapisanie wyników do pliku
+            DateTime data = DateTime.Now;
+            
+            using (System.IO.StreamWriter file =
+            new System.IO.StreamWriter(@"wyniki.txt", true))
+            {
+                file.WriteLine(data.ToString() + "\t" + wynik.ToString() + " pkt");
+            }
 
-            //Zapisanie wyników do pliku najlepszych wyników
+            //Reset timera
+            licznik_czasu = 0;
 
-            //Ukrycie elementów gry
+            //Wyświetlenie ekranu tytułowego i ukrycie elementów gry
+            
+            foreach (var item in gra.Children)
+            {
+                if (item is Button)
+                {
+                    var button = (Button)item;
+                    var buttonId = Convert.ToInt32(button.Tag);
+                    if (buttonId == 1)
+                    {
+                        button.Visibility = Visibility.Hidden;
+                    }
 
-            //Wyświetlenie ekranu tytułowego
+                }
+            }
+
+            tytulGry.Visibility = Visibility.Visible;
+            button1.Visibility = Visibility.Visible;
+            button2.Visibility = Visibility.Visible;
+            label1.Visibility = Visibility.Visible;
+            label2.Visibility = Visibility.Visible;
+            label3.Visibility = Visibility.Visible;
+            slider.Visibility = Visibility.Visible;
+            zegar.Visibility = Visibility.Hidden;
+
+            tryb = 0;
         }
-        
+
+        /*
+        private async Task Calculate(int number1, int number2)
+        {
+            await Task.Run(() =>
+            {
+                Thread.Sleep(1000);
+
+            });
+        }
+        */
+        void button_Click(object sender, RoutedEventArgs e)
+        {
+            //MessageBox.Show(string.Format("You clicked on the {0}. button.", (sender as Button).Tag));
+            ostatnia_komorka = (sender as Button).Tag.ToString();
+        }
+
+        private void CreateAButton(int y, int x)
+        {
+            Button btn = new Button();
+            btn.Height = 100;
+            btn.Width = 100;
+            btn.Name = "B" + y.ToString() + x.ToString();
+            //btn.Content = y.ToString() + x.ToString();
+            btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF931010"));
+            btn.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC9FF39"));
+            btn.Click += new RoutedEventHandler(button_Click);
+            btn.Tag = 1;
+
+            gra.Children.Add(btn);
+            btn.Margin = new Thickness(  x * (btn.Width*2+5),  y * (btn.Height * 2+5), -500, 0);
+        }
+
         private void button2_Click(object sender, RoutedEventArgs e)
         {
             //-----------------Wyświetlenie wyników
@@ -217,7 +248,30 @@ namespace WhySoSerious
         private void button3_Click(object sender, RoutedEventArgs e)
         {
             //-----------------Zamknięcie gry
-            this.Close();
+            if(tryb == 0)
+            {
+                this.Close();
+            } else if(tryb == 1)
+            {
+                //Gdy gra jest włączona to wyjście wychodzi do menu głównego
+                tytulGry.Visibility = Visibility.Visible;
+                button1.Visibility = Visibility.Visible;
+                button2.Visibility = Visibility.Visible;
+                label1.Visibility = Visibility.Visible;
+                label2.Visibility = Visibility.Visible;
+                label3.Visibility = Visibility.Visible;
+                slider.Visibility = Visibility.Visible;
+                zegar.Visibility = Visibility.Hidden;
+                
+                tryb = 0;
+            }
+            
+        }
+
+        void timer_Tick(object sender, EventArgs e)
+        {
+            licznik_czasu++;
+            zegar.Content = "Czas:\n" + (licznik_czasu / 60).ToString() + ":" + (licznik_czasu % 60).ToString();
         }
     }
 }
