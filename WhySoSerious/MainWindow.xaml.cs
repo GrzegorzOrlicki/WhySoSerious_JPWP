@@ -28,7 +28,9 @@ namespace WhySoSerious
         private int tryb = 0; //0 - menu główne, 1 - rysowanie planszy, 2 - gra, 3 - koniec
         int licznik_czasu = 0;
         string ostatnia_komorka = "";
+        string sciezka_org = "";
         string sciezka = "";
+        int klatka_animacji = 0;
         //string wspolrzedne = "";
         int fails = 0;
         DispatcherTimer timer = new DispatcherTimer();
@@ -40,11 +42,11 @@ namespace WhySoSerious
             //Licznik czasu
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += timer_Tick;
+            timer.Tick += timer_animacja;
         }
 
-        private async void button1_Click(object sender, RoutedEventArgs e)
+        private void button1_Click(object sender, RoutedEventArgs e)
         {
-            tryb = 1;
             //-----------------Rozpoczęcie gry
             //Wybór poziomu trudności
             int poziom = (int)slider.Value;
@@ -73,107 +75,142 @@ namespace WhySoSerious
             }
 
             //Animacja kolejnych kroków
-            sciezka = plansza.road;
-           
-            int k = 0;
-            while(sciezka.Length > 0)
-            {
-                string wspolrzedne = sciezka.Remove(2, sciezka.Length-2);
-                
-                foreach (var item in gra.Children)
-                {
-                    if (item is Button)
-                    {
-                        var button = (Button)item;
-                        string buttonId = button.Name.Remove(0, 1);
-                        if (buttonId == wspolrzedne)
-                        {
-                            button.Content = k.ToString();
-                        }
-
-                    }
-                }
-                k++;
-                sciezka = sciezka.Remove(0, 2);
-            }
-
-            MessageBox.Show("Start!");
-            //II część - ruch gracza
+            sciezka_org = plansza.road;
+            sciezka = sciezka_org;
             licznik_czasu = 0;
+            timer.Tick -= timer_Tick;
             timer.Start();
-            zegar.Visibility = Visibility.Visible;
-            //Pętla w której gracz wybiera kolejne kroki
-            //Sprawdzenie, czy ruch jest dozwolony
-            sciezka = plansza.road;
-
+            tryb = 1;
         }
 
-        /*
-        private async Task Calculate(int number1, int number2)
+        void timer_animacja(object sender, EventArgs e)
         {
-            await Task.Run(() =>
+            if(tryb == 1)
             {
-                Thread.Sleep(1000);
-
-            });
-        }
-        */
-        void  button_Click(object sender, RoutedEventArgs e)
-        {
-            ostatnia_komorka = ((sender as Button).Name.ToString()).Remove(0,1);
-
-            string wspolrzedne = sciezka.Remove(2, sciezka.Length - 2);
-            MessageBox.Show(wspolrzedne + " Wybrana scieżka: " + ostatnia_komorka + "\nSciezka: " + sciezka);
-            if (ostatnia_komorka == wspolrzedne)
-            {
-                //Została wybrana prawidłowa komórka
-                foreach (var item in gra.Children)
+                if (sciezka.Length > 0)
                 {
-                    if (item is Button)
-                    {
-                        var button = (Button)item;
-                        string buttonId = button.Name.Remove(0, 1);
-                        if (buttonId == wspolrzedne)
-                        {
-                            button.Content = new Image
-                            {
-                                Source = new BitmapImage(new Uri("footprints.png", UriKind.Relative)),
-                                VerticalAlignment = VerticalAlignment.Center
-                            };
-                        }
+                    string wspolrzedne = sciezka.Remove(2, sciezka.Length - 2);
 
+                    foreach (var item in gra.Children)
+                    {
+                        if (item is Button)
+                        {
+                            var button = (Button)item;
+                            string buttonId = button.Name.Remove(0, 1);
+                            if (buttonId == wspolrzedne)
+                            {
+                                button.Content = new Image
+                                {
+                                    Source = new BitmapImage(new Uri("footprints.png", UriKind.Relative)),
+                                    VerticalAlignment = VerticalAlignment.Center
+                                };
+                            }
+                        }
+                    }
+                    //k++;
+                    sciezka = sciezka.Remove(0, 2);
+                }
+                else
+                {
+                    //Gdy już koniec
+                    foreach (var item in gra.Children)
+                    {
+                        if (item is Button)
+                        {
+                            var button = (Button)item;
+                            if (button.Name.Length == 3)
+                            {
+                                button.Content = "";
+                            } 
+                        }
+                    }
+                    MessageBox.Show("Jesteś w gotowości?", "Start!");
+                    //II część - ruch gracza
+
+                    timer.Stop();
+                    timer.Tick += timer_Tick;
+                    licznik_czasu = 0;
+                    zegar.Visibility = Visibility.Visible;
+                    timer.Start();
+                    //Pętla w której gracz wybiera kolejne kroki
+                    //Sprawdzenie, czy ruch jest dozwolony
+                    sciezka = sciezka_org;
+                    tryb = 2;
+                }
+            }
+        }
+
+        void button_Click(object sender, RoutedEventArgs e)
+        {
+            if(tryb == 2)
+            {
+                ostatnia_komorka = ((sender as Button).Name.ToString()).Remove(0, 1);
+
+                string wspolrzedne = sciezka.Remove(2, sciezka.Length - 2);
+                //MessageBox.Show(wspolrzedne + " Wybrana scieżka: " + ostatnia_komorka + "\nSciezka: " + sciezka);
+                if (ostatnia_komorka == wspolrzedne)
+                {
+                    //Została wybrana prawidłowa komórka
+                    foreach (var item in gra.Children)
+                    {
+                        if (item is Button)
+                        {
+                            var button = (Button)item;
+                            string buttonId = button.Name.Remove(0, 1);
+                            if (buttonId == wspolrzedne)
+                            {
+                                button.Content = new Image
+                                {
+                                    Source = new BitmapImage(new Uri("footprints.png", UriKind.Relative)),
+                                    VerticalAlignment = VerticalAlignment.Center
+                                };
+                            }
+
+                        }
+                    }
+                    sciezka = sciezka.Remove(0, 2);
+                }
+                else
+                {
+                    fails++;
+                    if(fails < 3) MessageBox.Show("Błędna ścieżka!\nMasz jeszcze " + (3-fails) + " próby!", "Uwaga!");
+                    if(fails == 3)
+                    {
+                        MessageBox.Show("Niestety nie udało Ci się tym razem!", "Uwaga!");
+                        sciezka = "";
                     }
                 }
-                sciezka = sciezka.Remove(0, 2);
-            } else
-            {
-                fails++;
-                MessageBox.Show("Błędna ścieżka!");
-            }
 
-            if (sciezka == "")
-            {
-                //Koniec gry
-                timer.Stop();
-                //Wyświetlenie podsumowania - wynik
-                int wynik = (int)(Math.Pow(10, ((int)slider.Value - fails - 2)) - licznik_czasu);
-                MessageBox.Show("Udało Ci się ukończyć poziom!\nIlość punktów:\n" + wynik.ToString(), "Gratulacje!");
-                //Zapisanie wyników do pliku
-                DateTime data = DateTime.Now;
-
-                using (System.IO.StreamWriter file =
-                new System.IO.StreamWriter(@"wyniki.txt", true))
+                if (sciezka == "")
                 {
-                    file.WriteLine(data.ToString() + "\t" + wynik.ToString() + " pkt");
+                    //Koniec gry
+                    
+                    timer.Stop();
+
+                    //Wyświetlenie podsumowania - wynik
+                    int wynik;
+                    if (fails < 3)
+                    {
+                        wynik = (int)(Math.Pow(10, ((int)slider.Value - fails - 2)) - licznik_czasu);
+                        MessageBox.Show("Udało Ci się ukończyć poziom!\nIlość punktów:\n" + wynik.ToString(), "Gratulacje!");
+                        //Zapisanie wyników do pliku
+                        DateTime data = DateTime.Now;
+
+                        using (System.IO.StreamWriter file =
+                        new System.IO.StreamWriter(@"wyniki.txt", true))
+                        {
+                            file.WriteLine(data.ToString() + "\t" + wynik.ToString() + " pkt");
+                        }
+                    }
+                    
+                    //Reset timera
+                    licznik_czasu = 0;
+                    fails = 0;
+                    //Wyświetlenie ekranu tytułowego i ukrycie elementów gry
+                    wylaczenie_UI();
+
+                    tryb = 0;
                 }
-
-                //Reset timera
-                licznik_czasu = 0;
-
-                //Wyświetlenie ekranu tytułowego i ukrycie elementów gry
-                wylaczenie_UI();
-
-                tryb = 0;
             }
         }
 
@@ -183,7 +220,6 @@ namespace WhySoSerious
             btn.Height = 100;
             btn.Width = 100;
             btn.Name = "B" + y.ToString() + x.ToString();
-            //btn.Content = y.ToString() + x.ToString();
             btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF931010"));
             btn.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC9FF39"));
             btn.Click += new RoutedEventHandler(button_Click);
@@ -217,10 +253,9 @@ namespace WhySoSerious
             if(tryb == 0)
             {
                 this.Close();
-            } else if(tryb == 1)
+            } else
             {
                 //Gdy gra jest włączona to wyjście wychodzi do menu głównego
-                
                 wylaczenie_UI();
 
                 tryb = 0;
@@ -230,7 +265,7 @@ namespace WhySoSerious
 
         void timer_Tick(object sender, EventArgs e)
         {
-            licznik_czasu+=1;
+            licznik_czasu++;
             zegar.Content = "Czas:\n" + (licznik_czasu / 60).ToString() + ":" + (licznik_czasu % 60).ToString();
         }
 
