@@ -20,9 +20,11 @@ namespace WhySoSerious
 {
     /// <summary>
     /// Logika interakcji dla klasy MainWindow.xaml
+    /// Obrazek użyty do zaznaczenia kroków jest darmowy przy wspomnieniu autora (www.flaticon.com/authors/icongeek26)
+    /// został zmodyfikowany kolorystycznie by pasował do motywu graficznego gry
     /// </summary>
     /// 
-    
+
     public partial class MainWindow : Window
     {
         private int tryb = 0; //0 - menu główne, 1 - rysowanie planszy, 2 - gra, 3 - koniec
@@ -124,14 +126,15 @@ namespace WhySoSerious
                             } 
                         }
                     }
-                    MessageBox.Show("Jesteś w gotowości?", "Start!");
-                    //II część - ruch gracza
 
                     timer.Stop();
                     timer.Tick += timer_Tick;
                     licznik_czasu = 0;
-                    zegar.Visibility = Visibility.Visible;
+                    MessageBox.Show("Jesteś w gotowości?", "Start!");
+                    //II część - ruch gracza
+
                     timer.Start();
+                    zegar.Visibility = Visibility.Visible;
                     //Pętla w której gracz wybiera kolejne kroki
                     //Sprawdzenie, czy ruch jest dozwolony
                     sciezka = sciezka_org;
